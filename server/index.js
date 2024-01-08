@@ -1,6 +1,6 @@
 import io from './server.js'
 const users = []
-
+process.env.TZ = 'Asia/Tashkent'
 class User {
     constructor(login, socketId) {
         this.socketId = socketId
@@ -33,8 +33,8 @@ io.on('connection', (socket) => {
 
     // Обработчик для принятия сообщений от клиента
     socket.on('message', (data) => {
-        console.log(sessionUser)
-        io.emit('message', { user: sessionUser, text: data });
+
+        io.emit('message', { user: sessionUser, text: data, date: new Date() })
     });
 
     // socket.on('disconnect', (socket) => {

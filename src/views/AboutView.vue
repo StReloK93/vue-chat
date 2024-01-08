@@ -1,8 +1,8 @@
 <template>
-	<main class="relative h-full">
+	<main class="relative h-full w-[700px] mx-auto">
 		<div class="flex flex-col flex-auto h-full overflow-x-hidden antialiased text-gray-800">
-			<div class="flex flex-col flex-auto flex-shrink-0 rounded bg-gray-100 h-full p-2">
-				<div class="py-4 px-6 bg-slate-300 flex justify-between items-center">
+			<div class="flex flex-col flex-auto flex-shrink-0 rounded bg-slate-200 h-full p-2">
+				<div class="py-4 px-6 bg-slate-100 flex justify-between items-center">
 					<span>
 						{{ user?.login }}
 					</span>
@@ -12,29 +12,48 @@
 				</div>
 				<div class="flex flex-col h-full overflow-x-auto mb-4">
 					<div class="flex flex-col h-full">
-						<div class="grid grid-cols-12 gap-y-2">
-							<div v-for="message in messages" class="col-start-1 col-end-13 p-3 rounded-lg">
-								<div v-if="message.user.id != user?.id" class="flex flex-col items-start">
+						<div class="flex flex-col">
+							<div v-for="message in messages" ref="messagesList"
+								:class="{ 'self-end': message.user.id == user?.id }" class="p-3 rounded-lg w-3/4">
+								<div v-if="message.user.id != user?.id" class="flex flex-col items-start relative">
 									<p class="text-sm text-gray-400">{{ message.user.login }}</p>
-									<div class="relative text-sm bg-white py-2 px-4 shadow rounded">
-										<div>{{ message.text }}</div>
+									<div class="relative text-sm bg-white pt-2 pb-1 px-2 shadow rounded">
+										<div class="whitespace-pre-wrap">{{ message.text }}</div>
+										<div class="text-xs text-gray-400 text-right">
+											{{ moment(message.date).format('HH:mm') }}
+										</div>
 									</div>
 								</div>
-								<div v-else class="flex items-end justify-start flex-col">
+								<div v-else class="flex items-end justify-start flex-col relative">
+									<!--  -->
 									<p class="text-sm text-gray-400">{{ message.user.login }}</p>
-									<div class="relative text-sm bg-indigo-100 py-2 px-4 shadow rounded">
-										<div>{{ message.text }}</div>
+									<div class="relative text-sm bg-indigo-50 pt-2 pb-1 px-2 shadow rounded">
+										<div class="whitespace-pre-wrap">{{ message.text }}</div>
+										<span class="text-xs text-gray-400">
+											{{ moment(message.date).format('HH:mm') }}
+										</span>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-				<form @submit.prevent="getMessage()" class="flex flex-row items-center h-16 rounded bg-white w-full px-4">
+				<form @submit.prevent="getMessage()" class="flex flex-row items-start py-4 rounded bg-white w-full px-4">
 					<div class="flex-grow">
-						<div class="relative w-full">
-							<input type="text" v-model="message"
-								class="flex w-full border rounded focus:outline-none focus:border-indigo-300 pl-4 h-10" />
+						<div class="w-full relative">
+							<textarea @keydown.enter.prevent="handleEnterKey" ref="messageInput" type="text"
+								v-model="message"
+								class="flex w-full border rounded focus:outline-none focus:border-indigo-300 py-2 px-3 max-h-24 h-20 min-h-11">
+							</textarea>
+							<button @click="emojiOpen = true" type="button" class="absolute top-2 right-3  text-xl">
+								<i class="fa-regular fa-face-smile"></i>
+							</button>
+							<Transition name="slide-fade">
+								<EmojiPicker v-show="emojiOpen" :native="true" @select="onSelectEmoji"
+									@mouseleave="emojiOpen = false" class="absolute bottom-14 right-0" :hide-search="true"
+									:hide-group-names="true" :display-recent="true" :disable-skin-tones="true"
+									:disable-sticky-group-names="true" />
+							</Transition>
 						</div>
 					</div>
 					<div class="ml-4">
@@ -65,23 +84,33 @@
 	</main>
 </template>
 <script setup lang="ts">
+import moment from 'moment'
+// import picker compopnent
+import EmojiPicker from 'vue3-emoji-picker'
 
+// import css
+import 'vue3-emoji-picker/css'
 import { io } from 'socket.io-client'
-import { ref } from 'vue'
-const socket = io('http://localhost:3000')
+import { ref, nextTick } from 'vue'
+const socket = io('http://192.168.14.92:3000')
 const sessionUser = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user') as string) : null
 const user: any = ref(sessionUser)
-const loginInput = ref()
 const message = ref("")
 const messages: any = ref([])
+const emojiOpen = ref(false)
 
 
-if (user.value) {
+const loginInput = ref()
+const messageInput = ref()
+const messagesList = ref()
 
-	console.log('as');
-	
-	socket.emit('connectId', user.value.id)
+
+function onSelectEmoji(emoji: any) {
+	message.value += emoji.i
+	messageInput.value.focus()
 }
+
+if (user.value) socket.emit('connectId', user.value.id)
 // Отправка сообщения на сервер
 socket.on('connectId', (selected) => {
 	if (selected == null) {
@@ -89,21 +118,65 @@ socket.on('connectId', (selected) => {
 		user.value = null
 	}
 	else user.value = selected
-	
+
 })
 
+
+
+const handleEnterKey = (event: any) => {
+	if (event.shiftKey) {
+		// Если нажат Shift + Enter, добавляем новую строку
+		const cursorPosition = event.target.selectionStart;
+		const newValue =
+			message.value.substring(0, cursorPosition) +
+			'\n' +
+			message.value.substring(event.target.selectionEnd);
+
+		message.value = newValue;
+
+		// Перемещаем курсор в новую строку
+		event.target.selectionStart = cursorPosition + 1;
+		event.target.selectionEnd = cursorPosition + 1;
+	}
+	else {
+		getMessage()
+	}
+}
+
+
+
+
+
+
+
 function getMessage() {
+	if (message.value.replace(/\s/g, "") == "") return
 	socket.emit('message', message.value)
 	message.value = ""
 }
 
 // Принятие сообщения от сервера
 socket.on('message', (message) => {
-	console.log(message, 'text for mess')
-	
+
 	messages.value.push(message)
+	// nextTick()
+
+	setTimeout(() => {
+
+		scrollToLastMessage(messagesList.value[messagesList.value.length - 1])
+	}, 500)
 })
 
+const scrollToLastMessage = (lastMessageRef: any) => {
+	nextTick(() => {
+		// Плавно прокручиваем к последнему сообщению
+		lastMessageRef.scrollIntoView({
+			behavior: "smooth",
+			block: "end",
+			inline: "nearest"
+		})
+	});
+};
 
 function loginToChat() {
 	socket.emit('login', { login: loginInput.value.value })
