@@ -1,5 +1,5 @@
 <template>
-  <section class="container mx-auto py-4 h-screen">
+  <section class="container mx-auto p-4 h-screen">
     <RouterView />
   </section>
 </template>

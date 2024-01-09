@@ -8,6 +8,7 @@
     "allowJs": true,
     "composite": true,
     "noEmit": true,
+    "noUnusedLocals": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

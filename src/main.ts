@@ -1,5 +1,5 @@
 import './assets/main.css'
-
+import 'vue3-emoji-picker/css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
