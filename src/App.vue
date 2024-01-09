@@ -1,9 +1,9 @@
 <template>
-  <section class="container mx-auto p-4 h-screen">
+  <section class="container mx-auto p-1 sm:p-2 h-screen">
     <RouterView />
   </section>
 </template>
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
 </script>
 
