@@ -1,9 +1,10 @@
 <template>
-    <div :class="{'self-end': myMessage }" class="p-3 rounded-lg w-3/4">
+    <div :class="{ 'self-end': myMessage }" class="p-3 rounded-lg max-w-[75%]">
         <div :class="[myMessage ? 'items-end justify-start' : 'items-start']" class="flex flex-col relative ">
-            <p class="text-sm text-gray-400">{{ message.user.login }}</p>
-            <div :class="[myMessage ? 'bg-indigo-50' : 'bg-white']" class="relative text-sm  pt-2 pb-1 px-2 shadow rounded">
-                <div class="whitespace-pre-wrap">{{ message.text }}</div>
+            <p class="text-sm text-gray-400">{{ message.from.ipAddress }}</p>
+            <div :class="[myMessage ? 'bg-indigo-50' : 'bg-white']"
+                class="relative text-sm  pt-2 pb-1 px-2 shadow rounded max-w-full">
+                <div class="text-wrap wrapword">{{ message.text }}</div>
                 <div class="text-xs text-gray-400 text-right">
                     {{ moment(message.date).format('HH:mm') }}
                 </div>
@@ -16,3 +17,15 @@
 import moment from 'moment'
 const { myMessage, message } = defineProps(['myMessage', 'message'])
 </script>
+<style>
+.wrapword {
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    white-space: -webkit-pre-wrap;
+    word-break: break-all;
+    white-space: normal;
+}
+</style>
