@@ -19,20 +19,32 @@ io.on("connection", (socket) => {
     var sessionUser: IUser = new User(ipAddress, socket.id, users);
     users.push(sessionUser);
   }
-  
+
   socket.broadcast.emit("join", sessionUser);
 
-  socket.emit("start", { user: sessionUser, messages, users:  users.filter((currentUser) => user != currentUser) });
+  socket.emit("start", { 
+    user: sessionUser, 
+    messages: messages.filter((message) => {
+      const my = message.from == sessionUser.ipAddress
+      const forMe = message.to == sessionUser.ipAddress
+      const globalChat = message.toChannel == 'global'
 
-  socket.on("message", (text) => {
-    const message = new Message({
-      from: sessionUser,
-      toChannel: "global",
-      text: text,
+      return my || forMe || globalChat
+    }),
+    users:  users.filter((currentUser) => user != currentUser)
+  });
+
+  socket.on("message", ({message, to}) => {
+    const mess = new Message({
+      from: sessionUser.ipAddress,
+      toChannel: to.includes('.') ? null : to,
+      to: to.includes('.') ? to : null,
+      text: message,
       messages: messages,
     });
-    io.emit("message", message);
-    messages.push(message);
+
+    io.emit("message", mess);
+    messages.push(mess);
   });
 
   socket.on("disconnect", () => {

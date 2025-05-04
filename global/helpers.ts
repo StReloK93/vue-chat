@@ -5,19 +5,21 @@ export class User implements IUser {
   socketId: string;
   ipAddress: string;
   online: boolean;
+  messages: Message[];
 
   constructor(ipAddress: string, socketId: string, users: IUser[]) {
     this.socketId = socketId;
     this.ipAddress = ipAddress;
     this.id = users.length;
     this.online = true;
+    this.messages = []
   }
 }
 
 export class Message {
   id: number;
-  from: IUser;
-  to?: IUser;
+  from: string;
+  to?: string;
   text: string;
   date: Date;
   toChannel?: string;
@@ -26,9 +28,9 @@ export class Message {
 
   constructor(params: {
     id?: number;
-    from: IUser;
+    from: string;
     text: string;
-    to?: IUser;
+    to?: string;
     toChannel?: string;
     messages: any[];
   }) {
@@ -41,10 +43,10 @@ export class Message {
 
     this.id = messages.length;
     this.from = from;
+    this.toChannel = toChannel;
+    this.to = to;
     this.text = text;
     this.date = new Date();
-    this.to = to;
-    this.toChannel = toChannel;
     this.viewusers = [];
   }
 }

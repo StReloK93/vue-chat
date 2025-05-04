@@ -2,7 +2,7 @@
 	<main class="relative h-full max-w-[700px] mx-auto">
 		<div class="flex flex-row flex-auto h-full overflow-x-hidden antialiased text-gray-800">
 			<div class="bg-slate-200 mr-1 rounded overflow-hidden">
-				<button v-for="user in users" @click="activeChat = user.ipAddress" class="block w-full" :class="{'bg-white' : activeChat == user.ipAddress}">
+				<button v-for="user in users" @click="selectChat(user.ipAddress)" class="block w-full" :class="{'bg-white' : activeChat == user.ipAddress}">
 					<main class="flex items-center gap-2 justify-between capitalize  p-1.5">
 						{{ user.ipAddress }}
 						<span :class="[user.online ? 'bg-teal-500' : 'bg-gray-400']"
@@ -16,8 +16,8 @@
 				</div>
 				<div class="flex-grow relative">
 					<div class="flex flex-col overflow-x-auto absolute inset-0">
-						<MessageVue v-for="message in messages" ref="messagesList"
-							:my-message="message.from.ipAddress == user?.ipAddress" :message="message" />
+						<MessageVue v-for="message in activeChatMessages" ref="messagesList"
+							:my-message="message.from == user?.ipAddress" :message="message" />
 					</div>
 				</div>
 				<form @submit.prevent="writeMessage()" class="flex flex-row items-start py-4 rounded bg-white w-full px-4">
@@ -60,12 +60,16 @@ const emojiOpen = ref(false)
 const messageInput = ref()
 const messagesList = ref([])
 
-const { user, users, message, messages, writeMessage, handel, messageContain, activeChat } = useChat(messagesList)
+const { user, users, message, activeChatMessages, writeMessage, handel, messageContain, activeChat } = useChat(messagesList)
 
 
 function onSelectEmoji(emoji: any) {
 	message.value += emoji.i
 	messageInput.value.focus()
+}
+
+function selectChat(ipAddress: string){
+	activeChat.value = ipAddress
 }
 
 

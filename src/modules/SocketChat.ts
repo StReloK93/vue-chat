@@ -24,7 +24,6 @@ export default function (messagesList: any) {
     messages.value = data.messages;
     data.users.forEach((user: IUser) => user.online = true)
     users.value = data.users;
-
     console.log(data);
     
     nextTick(() => scrollToLastMessage(messagesList.value.at(-1)));
@@ -32,10 +31,8 @@ export default function (messagesList: any) {
 
   // Принятие сообщения от сервера
   socket.on("message", async (message: Message) => {
-    console.log(message);
-    
     messages.value.push(message);
-    if (message.from.id == user.value?.id)
+    if (message.from == user.value?.ipAddress)
       nextTick(() => scrollToLastMessage(messagesList.value.at(-1)));
   });
 
@@ -54,9 +51,19 @@ export default function (messagesList: any) {
 
   const messageContain = computed(() => message.value.trim() == "");
 
+  const activeChatMessages = computed(() => messages.value.filter(((message) => {
+    const my = message.from == activeChat.value && user.value.ipAddress == message.to
+    const forMe = message.to == activeChat.value && user.value.ipAddress == message.from
+    const globalChat = message.toChannel == activeChat.value
+    return my || forMe || globalChat
+  })));
+
   function writeMessage() {
     if (message.value.trim() == "") return;
-    socket.emit("message", message.value);
+    socket.emit("message", {
+      message: message.value,
+      to: activeChat.value
+    });
     message.value = "";
   }
 
@@ -79,6 +86,7 @@ export default function (messagesList: any) {
     writeMessage,
     handel,
     messageContain,
-    activeChat
+    activeChat,
+    activeChatMessages
   };
 }
