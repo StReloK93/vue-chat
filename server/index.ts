@@ -11,7 +11,7 @@ io.on("connection", (socket) => {
   const ipAddress = cleanIp(socket.handshake.address);
   const user = users.find((user) => user.ipAddress === ipAddress);
 
-  
+
   if (user) {
     user.socketId = socket.id;
     var sessionUser = user;
@@ -22,8 +22,8 @@ io.on("connection", (socket) => {
 
   socket.broadcast.emit("join", sessionUser);
 
-  socket.emit("start", { 
-    user: sessionUser, 
+  socket.emit("start", {
+    user: sessionUser,
     messages: messages.filter((message) => {
       const my = message.from == sessionUser.ipAddress
       const forMe = message.to == sessionUser.ipAddress
@@ -31,24 +31,36 @@ io.on("connection", (socket) => {
 
       return my || forMe || globalChat
     }),
-    users:  users.filter((currentUser) => user != currentUser)
+    users: users.filter((currentUser) => user != currentUser)
   });
 
-  socket.on("message", ({message, to}) => {
+  socket.on("message", ({ message, to }) => {
+    const isIpAddress = to.includes('.')
+    const recieverUser = users.find((user) => user.ipAddress === to);
+    const senderUser = users.find((user) => user.ipAddress === sessionUser.ipAddress);
+
     const mess = new Message({
       from: sessionUser.ipAddress,
-      toChannel: to.includes('.') ? null : to,
-      to: to.includes('.') ? to : null,
+      toChannel: isIpAddress ? null : to,
+      to: isIpAddress ? to : null,
       text: message,
       messages: messages,
     });
 
-    io.emit("message", mess);
+    if (isIpAddress && senderUser && recieverUser) {
+      io.to([senderUser.socketId, recieverUser.socketId]).emit("message", mess);
+    }
+    else {
+      io.emit("message", mess);
+    }
     messages.push(mess);
   });
 
   socket.on("disconnect", () => {
     const user = users.find((user) => user.ipAddress === ipAddress);
-    io.emit("exit", user);
+    if (user) {
+      user.online = false
+      io.emit("exit", user);
+    }
   });
 });

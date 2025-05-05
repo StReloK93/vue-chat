@@ -31,6 +31,8 @@ export default function (messagesList: any) {
 
   // Принятие сообщения от сервера
   socket.on("message", async (message: Message) => {
+    console.log(message);
+    
     messages.value.push(message);
     if (message.from == user.value?.ipAddress)
       nextTick(() => scrollToLastMessage(messagesList.value.at(-1)));
