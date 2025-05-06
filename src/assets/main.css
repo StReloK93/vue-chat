@@ -1,9 +1,6 @@
 @tailwind base;
-
 @tailwind components;
-
 @tailwind utilities;
-
 .slide-fade-enter-active {
   transition: all 0.1s;
 }
@@ -28,33 +25,9 @@ emoji-picker {
   --category-emoji-padding: 2px;
 }
 
-::-webkit-scrollbar {
-  width: 2px;
-  /* width of the entire scrollbar */
-}
-
-::-webkit-scrollbar-track {
-  background: rgb(255, 255, 255);
-  /* color of the tracking area */
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgb(24, 79, 230);
-}
-
-
-*::-webkit-scrollbar {
-  width: 2px!important;
-  /* width of the entire scrollbar */
-}
-*::-webkit-scrollbar-track {
-  background: rgb(255, 255, 255)!important;
-  /* color of the tracking area */
-}
-
-*::-webkit-scrollbar-thumb {
-  background: rgb(24, 79, 230)!important;
-}
+::-webkit-scrollbar {width: 2px;}
+::-webkit-scrollbar-track {background: rgb(255, 255, 255);}
+::-webkit-scrollbar-thumb {background: rgb(24, 79, 230);}
 
 .wrapword {
   white-space: -moz-pre-wrap !important;

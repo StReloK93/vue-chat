@@ -6,7 +6,7 @@
                @select="changer" ref="textArea" type="text" v-model="message"
                class="flex w-full border focus:outline-none focus:border-indigo-300 py-2 pl-3 pr-10 max-h-24 h-20 min-h-11">
 							</textarea>
-            <button @mouseover="openEmoji" type="button" :class="{ 'text-blue-600': emojiToggle }"
+            <button @mouseover="openEmoji" @click="openEmoji" type="button" :class="{ 'text-blue-600': emojiToggle }"
                class="absolute top-2 right-3  text-xl">
                <i class="fa-regular fa-face-smile"></i>
             </button>
