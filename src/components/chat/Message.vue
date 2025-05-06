@@ -4,7 +4,7 @@
             <p class="text-sm text-gray-400">{{ message.from }}</p>
             <div :class="[myMessage ? 'bg-indigo-50' : 'bg-white']"
                 class="relative text-sm  pt-2 pb-1 px-2 shadow rounded max-w-full">
-                <div class="text-wrap wrapword">{{ message.text }}</div>
+                <div class="wrapword">{{ message.text }}</div>
                 <div class="text-xs text-gray-400 text-right">
                     {{ moment(message.date).format('HH:mm') }}
                 </div>

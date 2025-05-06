@@ -8,7 +8,13 @@ export default defineConfig({
     host: '0.0.0.0',// Это позволяет серверу быть доступным из локальной сети
   },
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'emoji-picker'
+        }
+      }
+    }),
   ],
   resolve: {
     alias: {

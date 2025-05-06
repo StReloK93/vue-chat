@@ -18,16 +18,42 @@
   opacity: 0;
 }
 
+emoji-picker {
+  --num-columns: 5;
+  --emoji-size: 1.5rem;
+  --background: rgb(255, 255, 255);
+  --emoji-padding: 8px;
+  --skintone-border-radius: 2px;
+  --border-radius: 8px;
+  --category-emoji-padding: 2px;
+}
+
 ::-webkit-scrollbar {
-  width: 2px;               /* width of the entire scrollbar */
+  width: 2px;
+  /* width of the entire scrollbar */
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(255, 255, 255);        /* color of the tracking area */
+  background: rgb(255, 255, 255);
+  /* color of the tracking area */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(24, 79, 230); 
+  background: rgb(24, 79, 230);
+}
+
+
+*::-webkit-scrollbar {
+  width: 2px!important;
+  /* width of the entire scrollbar */
+}
+*::-webkit-scrollbar-track {
+  background: rgb(255, 255, 255)!important;
+  /* color of the tracking area */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgb(24, 79, 230)!important;
 }
 
 .wrapword {
@@ -35,8 +61,7 @@
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   white-space: pre-wrap;
-  word-wrap: break-word;
   white-space: -webkit-pre-wrap;
+  word-wrap: break-word;
   word-break: break-all;
-  white-space: normal;
 }
