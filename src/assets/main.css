@@ -27,14 +27,18 @@ emoji-picker {
 
 ::-webkit-scrollbar {width: 2px;}
 ::-webkit-scrollbar-track {background: rgb(255, 255, 255);}
-::-webkit-scrollbar-thumb {background: rgb(24, 79, 230);}
+::-webkit-scrollbar-thumb {background: rgb(109, 109, 109);}
 
+
+
+.hidden-scroll::-webkit-scrollbar {width: 0px;}
+.hidden-scroll::-webkit-scrollbar-track {background: rgb(255, 255, 255);}
+.hidden-scroll::-webkit-scrollbar-thumb {background: rgb(24, 79, 230);}
 .wrapword {
   white-space: -moz-pre-wrap !important;
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
-  white-space: pre-wrap;
   white-space: -webkit-pre-wrap;
+  white-space: pre-wrap;
   word-wrap: break-word;
-  word-break: break-all;
 }

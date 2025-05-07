@@ -1,7 +1,11 @@
 <template>
-	<div :class="{ 'self-end': myMessage }" class="p-3 rounded-lg max-w-[75%]">
+	<div :class="[
+			{ 'self-end': myMessage },
+			props.oldMessage?.from != message.from ? 'py-2' : 'pb-1',
+			props.nextMessage?.from != message.from ? '' : 'pb-1',
+		]" class="rounded-lg max-w-[82%]">
 		<div :class="[myMessage ? 'items-end justify-start' : 'items-start']" class="flex flex-col relative ">
-			<p class="text-sm text-gray-400">{{ message.from }}</p>
+			<p class="text-sm text-gray-400" v-if="props.oldMessage?.from != message.from">{{ message.from }}</p>
 			<div ref="messageref" :class="[myMessage ? 'bg-indigo-50' : 'bg-white']"
 				class="relative text-sm  pt-2 pb-1 px-2 shadow rounded max-w-full  min-w-20">
 				<div class="wrapword">{{ message.text }}</div>
@@ -25,14 +29,19 @@
 import { Message } from 'global/helpers';
 import moment from 'moment'
 const props = defineProps<{
-	myMessage: boolean
 	message: Message
-	user: IUser
+	user: IUser,
+	oldMessage: Message | undefined
+	nextMessage: Message | undefined
 }>()
 import { useIntersectionObserver } from '@vueuse/core'
 import { computed, useTemplateRef } from 'vue'
 import type { IUser } from 'global';
 
+
+
+
+const myMessage = computed(() => props.message.from == props.user?.ipAddress) 
 const emit = defineEmits(['visible'])
 const messageref = useTemplateRef<HTMLDivElement>('messageref')
 
@@ -41,12 +50,12 @@ const ipAddresses = computed(() => {
 })
 
 useIntersectionObserver(
-	messageref,
-	([entry]) => {
-		if (entry.intersectionRatio == 1 && !props.myMessage) {
-			emit('visible', props.message)
-		}
-	},
-	{ threshold: 1 }
+  messageref,
+  ([entry]) => {
+    if (entry.isIntersecting && !myMessage.value) {
+      emit('visible', props.message)
+    }
+  },
+  { threshold: [0.3] } // kamida oz qismi ko‘rinsa
 )
 </script>
