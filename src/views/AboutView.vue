@@ -1,5 +1,5 @@
 <template>
-	<main class="relative h-full max-w-[700px] mx-auto">
+	<main class="relative h-full max-w-[900px] mx-auto">
 		<div class="flex flex-row flex-auto h-full overflow-x-hidden antialiased text-gray-800">
 			<div class="bg-slate-200 mr-1 rounded overflow-hidden w-64">
 				<button v-for="menu in menuUsers" @click="selectChat(menu.user.ipAddress)"
@@ -10,12 +10,15 @@
 							class="w-2 h-2 inline-block rounded-full"></span>
 					</main>
 					<div class="text-left flex items-center">
-						<aside class="w-3/4">
-							<i v-if="user.ipAddress == menu.messages.at(-1)?.from" class="fa-solid fa-user text-sky-900 text-sm"></i>
-							{{ menu.messages.at(-1)?.text }}
+						<aside class="w-4/5 flex items-center">
+							<i v-if="user?.ipAddress == menu.messages.at(-1)?.from" class="fa-solid fa-user text-sky-900 text-sm mr-1.5"></i>
+							<p class="line-clamp-1 ">
+								{{ menu.messages.at(-1)?.text }}
+							</p>
 						</aside>
 						<div class="flex-grow text-right">
-							<span class="w-5 h-5 text-xs text-center content-center bg-green-500 inline-block rounded-full" v-if="menu.issetNewMessage">
+							<span class="w-5 h-5 text-xs text-center content-center bg-green-500 inline-block rounded-full"
+								v-if="menu.issetNewMessage.length">
 								{{ menu.issetNewMessage.length }}
 							</span>
 						</div>
@@ -30,7 +33,7 @@
 
 				<MessagesList @chat-scroll="onScrollChat">
 					<MessageVue v-for="message in activeChatMessages" ref="messagesList"
-						:my-message="message.from == user?.ipAddress" :message="message" />
+						:my-message="message.from == user?.ipAddress" :user="user" :message="message" @visible="onVisibleMessage" />
 				</MessagesList>
 				<MessageInput @submit="writeMessage()" @submit-enter="handel" :messageContain="message.trim() == ''"
 					v-model="message" />
@@ -43,5 +46,27 @@ import MessagesList from '@/components/MessagesList.vue'
 import MessageVue from '@/components/chat/Message.vue'
 import useChat from '@/modules/SocketChat'
 import MessageInput from '@/components/chat/MessageInput.vue'
-const { messagesList, user, menuUsers, message, activeChatMessages, writeMessage, handel, activeChat, onScrollChat, selectChat } = useChat()
+import { watch, type Ref, ref } from 'vue'
+const { messagesList, user, menuUsers, message, activeChatMessages, writeMessage, handel, activeChat, onScrollChat, selectChat, onVisibleMessage } = useChat()
+
+const oldTitle = document.title
+const intervalId: Ref<number | undefined> = ref(undefined)
+watch(() => menuUsers.value, (current) => {
+	const yes = current.some((menu) => menu.issetNewMessage.length > 0)
+	if (yes) {
+		var gar = 0
+		clearInterval(intervalId.value)
+		intervalId.value = setInterval(() => {
+			if (gar % 2 == 0) document.title = "New Message"
+			else document.title = oldTitle
+
+			gar++
+
+		}, 1000);
+	}
+	else {
+		if (intervalId.value) clearInterval(intervalId.value)
+		document.title = oldTitle
+	}
+})
 </script>

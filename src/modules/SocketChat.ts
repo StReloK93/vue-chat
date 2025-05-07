@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import type { IUser } from "../../global";
 import type { Ref } from "vue";
 import type { Message } from "../../global/helpers";
-import { scrollToLastMessage } from "./scrollToEnd";
+import { scrollToLastMessage, getScrollProcent } from "./scrollToEnd";
 import { playNotificationSound } from "./messageSound";
 import { ref, computed, nextTick } from "vue";
 const urlWithoutPort = window.location.hostname;
@@ -27,20 +27,18 @@ export default function () {
   }
 
   socket.on("start", (data) => {
-
-
     user.value = data.user;
     messages.value = data.messages;
     users.value = data.users;
-
-    
-    // messages.value.forEach(message => {
-    //   message.viewusers.push(data.user)
-    // });
-    
     nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
   });
 
+  socket.on("message_readed", ({message, user}) => {
+    const currentMessage = messages.value.find((mess)=> mess.id == message.id)
+    currentMessage?.viewusers.push(user)
+  });
+
+  
   // Принятие сообщения от сервера
   socket.on("message", async (message: Message) => {
     if (message.from != user.value?.ipAddress) playNotificationSound();
@@ -50,18 +48,16 @@ export default function () {
     }
   });
 
-  function onScrollChat(event: Event) {
-    const element = event.target as HTMLElement;
-    const hasScroll = element.scrollHeight > element.clientHeight;
-    if (element.scrollTop === 0) {
-      return hasScroll
-        ? (scrollProcent.value = 0)
-        : (scrollProcent.value = 100);
-    }
-    const percent =
-      (element.scrollTop / (element.scrollHeight - element.clientHeight)) * 100;
+  function onVisibleMessage(message: Message) {
+    const oldReaded = message.viewusers.map((viewedUser) => viewedUser.ipAddress).includes(user.value.ipAddress)
 
-    scrollProcent.value = Math.round(percent * 100) / 100;
+    if(oldReaded == false){
+      socket.emit("visibleMessage", { message: message, user: user.value });
+    }
+  }
+
+  function onScrollChat(event: Event) {
+    scrollProcent.value = getScrollProcent(event);
   }
 
   socket.on("join", (newuser: IUser) => {
@@ -82,7 +78,7 @@ export default function () {
   const activeChatMessages = computed(() => {
     const menu = menuUsers.value.find((menu) => menu.user.ipAddress == activeChat.value);
 
-    if(menu) return menu.messages
+    if (menu) return menu.messages
     else return []
   });
 
@@ -102,7 +98,7 @@ export default function () {
 
       const issetNewMessage = filteredMessages.filter((message) => message.from != user.value.ipAddress && !message.viewusers.map((viewedUser) => viewedUser.ipAddress).includes(user.value.ipAddress))
 
-      return { user: childUser, messages: filteredMessages, issetNewMessage:  issetNewMessage };
+      return { user: childUser, messages: filteredMessages, issetNewMessage: issetNewMessage };
     });
   });
 
@@ -136,5 +132,6 @@ export default function () {
     onScrollChat,
     handel,
     selectChat,
+    onVisibleMessage,
   };
 }

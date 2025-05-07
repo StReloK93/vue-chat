@@ -35,6 +35,13 @@ io.on("connection", (socket) => {
     users: users.filter((currentUser) => currentUser.ipAddress != ipAddress)
   });
 
+  socket.on('visibleMessage', ({message, user}: { message: Message, user: IUser }) => {
+    const currentMessage = messages.find((mess)=> mess.id == message.id)
+    currentMessage?.viewusers.push(user)
+    io.emit('message_readed', {message, user})
+  })
+
+
   socket.on("message", ({ message, to }) => {
     const isIpAddress = to.includes('.')
     const recieverUser = users.find((user) => user.ipAddress === to);
