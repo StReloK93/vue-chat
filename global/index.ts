@@ -5,5 +5,7 @@ export interface IUser {
   socketId: string;
   ipAddress: string;
   online?: boolean;
+  icon?: string;
+  color?: string;
   messages: Message[];
 }

@@ -1,11 +1,11 @@
 <template>
-   <form @submit.prevent="emit('submit')" class="flex flex-row py-3 rounded bg-white w-full px-4">
+   <form @submit.prevent="emit('submit')" class="flex flex-row py-3 rounded bg-white w-full px-4 shadow">
       <div class="flex-grow">
          <div class="w-full relative">
             <textarea placeholder="Write message" style="resize: none;" @mouseover="closeEmoji" @keydown.enter="emit('submit-enter', $event)"
                @click="changer" @keyup="changer" @select="changer" ref="textArea" type="text" v-model="message"
                class="flex w-full focus:outline-none hidden-scroll focus:border-indigo-300 py-2 pl-3 pr-12 max-h-32 h-auto min-h-16">
-							</textarea>
+				</textarea>
             <button @mouseover="openEmoji" @click="openEmoji" type="button" :class="{ 'text-blue-600': emojiToggle }"
                class="absolute bottom-[10px] right-3  text-xl">
                <i class="fa-regular fa-face-smile"></i>

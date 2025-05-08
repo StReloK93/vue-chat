@@ -4,7 +4,13 @@ import type { Ref } from "vue";
 import type { Message } from "../../global/helpers";
 import { scrollToLastMessage, getScrollProcent } from "./scrollToEnd";
 import { playNotificationSound } from "./messageSound";
-import { ref, computed, nextTick } from "vue";
+import { ref, nextTick } from "vue";
+import { useSessionStorage } from "@vueuse/core";
+
+const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500']
+const icons = ['fa-solid fa-apple-whole', 'fa-solid fa-share-nodes', 'fa-solid fa-comet', 'fa-solid fa-user-secret', 'fa-solid fa-hat-cowboy']
+
+
 const urlWithoutPort = window.location.hostname;
 const dynamicUrlHost = `http://${urlWithoutPort}:3000`;
 const socket = io(dynamicUrlHost);
@@ -14,44 +20,75 @@ export default function () {
   const users: Ref<IUser[]> = ref([]);
   const user: Ref<IUser> = ref(localUser ? localUser : null);
   const message: Ref<string> = ref("");
-  const messages: Ref<Message[]> = ref([]);
   const scrollProcent = ref(0);
   const messagesList = ref([]);
 
-  const activeChat: Ref<string | null> = ref("global");
+  const activeChat: Ref<string | null> = useSessionStorage('activeChat', null);
 
   function selectChat(ipAddress: string) {
     activeChat.value = null;
-    activeChat.value = ipAddress;
-    nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
+    setTimeout(() => {
+      activeChat.value = ipAddress;
+      nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
+    })
   }
 
-  socket.on("start", (data) => {
-    user.value = data.user;
-    messages.value = data.messages;
-    users.value = data.users;
+  socket.on("start", ({ user: currentUser, users: chats }: { user: IUser, users: IUser[] }) => {
+    chats.forEach((currentUser) => {
+      currentUser.color = colors[Math.floor(Math.random() * colors.length)]
+      currentUser.icon = icons[Math.floor(Math.random() * icons.length)]
+    })
+
+    user.value = currentUser;
+    users.value = chats;
     nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
   });
 
-  socket.on("message_readed", ({message, user}) => {
-    const currentMessage = messages.value.find((mess)=> mess.id == message.id)
-    currentMessage?.viewusers.push(user)
+  socket.on("message_readed", ({ message: currentMessage, user: viewedUser }: { message: Message, user: IUser }) => {
+
+    if (currentMessage.toChannel) {
+      const selectedChat = users.value.find((currentUser) => currentUser.ipAddress == currentMessage.toChannel)
+      const selectedMessage = selectedChat?.messages.find((message) => currentMessage.id == message.id)
+      selectedMessage?.viewusers.push(viewedUser)
+    }
+    else {
+
+      const myMessage = currentMessage.from == user.value.ipAddress
+      const partnerIp = myMessage ? currentMessage.to : currentMessage.from
+      const selectedChat = users.value.find((currentUser) => currentUser.ipAddress == partnerIp)
+      const selectedMessage = selectedChat?.messages.find((message) => currentMessage.id == message.id)
+      selectedMessage?.viewusers.push(viewedUser)
+
+    }
+
   });
 
-  
-  // Принятие сообщения от сервера
   socket.on("message", async (message: Message) => {
+    if (message.toChannel) {
+      const selectedChat = users.value.find((currentUser) => currentUser.ipAddress == message.toChannel)
+      selectedChat?.messages.push(message)
+    }
+    else {
+
+      const myMessage = message.from == user.value.ipAddress
+      const partnerIp = myMessage ? message.to : message.from
+      const selectedChat = users.value.find((currentUser) => currentUser.ipAddress == partnerIp)
+      selectedChat?.messages.push(message)
+
+    }
+
     if (message.from != user.value?.ipAddress) playNotificationSound();
-    messages.value.push(message);
     if (message.from == user.value?.ipAddress || scrollProcent.value == 100) {
       nextTick(() => scrollToLastMessage(messagesList.value.at(-1)));
     }
   });
 
   function onVisibleMessage(message: Message) {
-    const oldReaded = message.viewusers.map((viewedUser) => viewedUser.ipAddress).includes(user.value.ipAddress)
+    const oldReaded = message.viewusers
+      .map((viewedUser) => viewedUser.ipAddress)
+      .includes(user.value.ipAddress)
 
-    if(oldReaded == false){
+    if (oldReaded == false) {
       socket.emit("visibleMessage", { message: message, user: user.value });
     }
   }
@@ -75,33 +112,6 @@ export default function () {
     if (user) user.online = false;
   });
 
-  const activeChatMessages = computed(() => {
-    const menu = menuUsers.value.find((menu) => menu.user.ipAddress == activeChat.value);
-
-    if (menu) return menu.messages
-    else return []
-  });
-
-  const menuUsers = computed(() => {
-    return users.value.map((childUser) => {
-      const filteredMessages = messages.value.filter((message) => {
-        const isIpAddress = childUser.ipAddress.includes(".");
-        if (isIpAddress) {
-          return (
-            [message.from, message.to].includes(childUser.ipAddress) &&
-            [message.from, message.to].includes(user.value.ipAddress)
-          );
-        } else {
-          return message.toChannel == childUser.ipAddress;
-        }
-      });
-
-      const issetNewMessage = filteredMessages.filter((message) => message.from != user.value.ipAddress && !message.viewusers.map((viewedUser) => viewedUser.ipAddress).includes(user.value.ipAddress))
-
-      return { user: childUser, messages: filteredMessages, issetNewMessage: issetNewMessage };
-    });
-  });
-
   function writeMessage() {
     if (message.value.trim() == "") return;
     socket.emit("message", {
@@ -123,10 +133,7 @@ export default function () {
     user,
     users,
     message,
-    messages,
     activeChat,
-    activeChatMessages,
-    menuUsers,
     messagesList,
     writeMessage,
     onScrollChat,

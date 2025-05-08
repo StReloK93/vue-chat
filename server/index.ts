@@ -10,7 +10,7 @@ const messages: Message[] = [];
 io.on("connection", (socket) => {
   const ipAddress = cleanIp(socket.handshake.address);
   const user = users.find((user) => user.ipAddress === ipAddress);
-  
+
   if (user) {
     user.socketId = socket.id;
     var sessionUser = user;
@@ -23,6 +23,26 @@ io.on("connection", (socket) => {
 
   socket.broadcast.emit("join", sessionUser);
 
+  const chats = users
+    .filter((currentUser) => currentUser.ipAddress != ipAddress)
+
+    chats.forEach((currentUser) => {
+      const filteredMessages = messages.filter((message) => {
+        const isIpAddress = currentUser.ipAddress.includes(".");
+        if (isIpAddress) {
+          return (
+            [message.from, message.to].includes(currentUser.ipAddress) &&
+            [message.from, message.to].includes(ipAddress)
+          );
+        } else {
+          return message.toChannel == currentUser.ipAddress;
+        }
+      });
+
+      currentUser.messages = filteredMessages
+    })
+
+
   socket.emit("start", {
     user: sessionUser,
     messages: messages.filter((message) => {
@@ -32,13 +52,13 @@ io.on("connection", (socket) => {
 
       return my || forMe || globalChat
     }),
-    users: users.filter((currentUser) => currentUser.ipAddress != ipAddress)
+    users: chats
   });
 
-  socket.on('visibleMessage', ({message, user}: { message: Message, user: IUser }) => {
-    const currentMessage = messages.find((mess)=> mess.id == message.id)
+  socket.on('visibleMessage', ({ message, user }: { message: Message, user: IUser }) => {
+    const currentMessage = messages.find((mess) => mess.id == message.id)
     currentMessage?.viewusers.push(user)
-    io.emit('message_readed', {message, user})
+    io.emit('message_readed', { message, user })
   })
 
 
