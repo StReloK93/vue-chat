@@ -1,32 +1,27 @@
 <template>
 	<main v-if="user" class="relative h-full">
 		<div class="flex flex-row flex-auto h-full overflow-x-hidden antialiased text-gray-800">
-			<ChatUsers :menu-users="users" :user="user" :active-chat="activeChat" @select-chat="selectChat"/>
-			<div class="flex flex-col flex-auto flex-shrink-0 h-full">
-				<div class="py-5 px-2 flex justify-between items-center uppercase font-semibold text-sm">
-					{{ activeChat ?? '-' }}
+			<ChatUsers :menu-users="users" :user="user" :active-chat="activeChat" @select-chat="selectChat" />
+			<div :class="{'translate-x-full': activeChat == null}"
+				class="flex flex-col flex-auto flex-shrink-0 h-full sm:max-w-[992px] sm:translate-x-0 w-full sm:static fixed bg-white z-50 sm:transition-none transition-all">
+				<div class="h-14 px-2 flex justify-between items-center uppercase font-semibold text-sm">
+					<button @click="activeChat = null" class="w-10 h-10 rounded-full hover:bg-gray-100 active:bg-gray-50">
+						<i class="fa-solid fa-arrow-left"></i>
+					</button>
+					{{ activeChat }}
+					<span class="opacity-0 w-10">-</span>
 				</div>
-				<main style="background-size: 50%;" class="flex-grow bg-slate-200 shadow-inner bg-[url('/back.jpg')] rounded-t-2xl w-[992px]">
-					<aside class="h-full flex flex-col px-7 py-3">
+				<main style="background-size: 50%;"
+					class="flex-grow bg-slate-200 shadow-inner bg-[url('/back.jpg')] sm:rounded-t-2xl">
+					<aside class="h-full flex flex-col sm:px-7 px-3 sm:py-2 py-2">
 						<MessagesList ref="messagesParent" @chat-scroll="onScrollChat">
-							<MessageVue
-								v-for="(message, index) in messages" ref="messagesList"
-								:oldMessage="messages[index - 1]"
-								:nextMessage="messages[index + 1]"
-								:user="user"
-								:message="message"
-								:messagesParent="messagesParent?.airnet"
-								@visible="onVisibleMessage"
-								:key="index"
-							/>
+							<MessageVue v-for="(message, index) in messages" ref="messagesList"
+								:oldMessage="messages[index - 1]" :nextMessage="messages[index + 1]" :user="user"
+								:message="message" :messagesParent="messagesParent?.airnet" @visible="onVisibleMessage"
+								:key="index" />
 						</MessagesList>
-						<MessageInput
-							v-if="activeChat"
-							@submit="writeMessage()" 
-							@submit-enter="handel" 
-							:messageContain="message.trim() == ''"
-							v-model="message"
-						/>
+						<MessageInput v-if="activeChat" @submit="writeMessage()" @submit-enter="handel"
+							:messageContain="message.trim() == ''" v-model="message" />
 					</aside>
 				</main>
 			</div>
@@ -40,7 +35,7 @@ import MessageVue from '@/components/chat/Message.vue'
 import useChat from '@/modules/SocketChat'
 import MessageInput from '@/components/chat/MessageInput.vue'
 import { watch, type Ref, ref, computed } from 'vue'
-const { messagesList, user, users, message , writeMessage, handel, activeChat, onScrollChat, selectChat, onVisibleMessage } = useChat()
+const { messagesList, user, users, message, writeMessage, handel, activeChat, onScrollChat, selectChat, onVisibleMessage } = useChat()
 
 const messagesParent: any = ref(null)
 const oldTitle = document.title
@@ -50,7 +45,7 @@ const intervalId: Ref<number | undefined> = ref(undefined)
 
 const messages = computed(() => {
 	return users.value?.find((currentUser) => currentUser.ipAddress == activeChat.value)?.messages ?? []
-})	
+})
 // watch(() => menuUsers.value, (current) => {
 // 	const yes = current.some((menu) => menu.issetNewMessage.length > 0)
 // 	if (yes) {

@@ -1,6 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  overscroll-behavior: contain;
+}
+
+
 .slide-fade-enter-active {
   transition: all 0.1s;
 }

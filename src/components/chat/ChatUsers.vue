@@ -1,6 +1,6 @@
 <template>
-   <div class="mr-1 rounded overflow-hidden w-96">
-      <h3 class="py-5 px-6 uppercase font-semibold text-sm">
+   <div class="mr-1 rounded overflow-hidden w-full sm:w-72 bg-white h-full">
+      <h3 class="h-14 px-6 uppercase font-semibold text-sm content-center">
          All messages
       </h3>
       <button v-for="currentUser in props.menuUsers" @click="emit('selectChat', currentUser.ipAddress)"

@@ -7,7 +7,7 @@
 		<div :class="[myMessage ? 'items-end justify-start' : 'items-start']" class="flex flex-col relative ">
 			<p class="text-sm text-gray-600" v-if="props.oldMessage?.from != message.from">{{ message.from }}</p>
 			<div ref="messageref" :class="[myMessage ? 'bg-sky-50/90' : 'bg-white/90']"
-				class="relative border border-gray-100 text-sm  pt-2 pb-1 px-2 shadow rounded max-w-full  min-w-20">
+				class="relative border border-zinc-200 text-sm  pt-2 pb-1 px-2 shadow rounded max-w-full  min-w-20">
 				<div class="wrapword">{{ message.text }}</div>
 				<div :class="[myMessage ? 'flex-row-reverse' : '']"
 					class="text-xs text-gray-400 flex items-center justify-between">

@@ -27,9 +27,27 @@ export default function () {
 
   function selectChat(ipAddress: string) {
     activeChat.value = null;
-    setTimeout(() => {
+    
+    setTimeout(async () => {
+      const messages = users.value.find((currentUser) => currentUser.ipAddress == ipAddress)?.messages
       activeChat.value = ipAddress;
-      nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
+      const isIpAddress = ipAddress.includes(".");
+      if(isIpAddress){
+        const noViewedMessages = messages?.filter((message) => 
+          message.from == ipAddress && 
+          !message.viewusers.map((viewedUser) => viewedUser.ipAddress).includes(user.value.ipAddress)
+        ) as Message[]
+
+        if(noViewedMessages?.length == 0) return nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
+        const idList = noViewedMessages?.map((message) => message.id) as number[]
+
+        const maxId = Math.min(...idList)
+        const firstMessageIndex = messages?.findIndex((message) => message.id == maxId) as number
+          await nextTick(() => scrollToLastMessage(messagesList.value.at(firstMessageIndex), false));
+
+        
+      }
+
     })
   }
 
