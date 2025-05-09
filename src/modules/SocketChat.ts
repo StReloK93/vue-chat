@@ -44,8 +44,9 @@ export default function () {
         const maxId = Math.min(...idList)
         const firstMessageIndex = messages?.findIndex((message) => message.id == maxId) as number
           await nextTick(() => scrollToLastMessage(messagesList.value.at(firstMessageIndex), false));
-
-        
+      }
+      else{
+        return nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
       }
 
     })
