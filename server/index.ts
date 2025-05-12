@@ -26,21 +26,21 @@ io.on("connection", (socket) => {
   const chats = users
     .filter((currentUser) => currentUser.ipAddress != ipAddress)
 
-    chats.forEach((currentUser) => {
-      const filteredMessages = messages.filter((message) => {
-        const isIpAddress = currentUser.ipAddress.includes(".");
-        if (isIpAddress) {
-          return (
-            [message.from, message.to].includes(currentUser.ipAddress) &&
-            [message.from, message.to].includes(ipAddress)
-          );
-        } else {
-          return message.toChannel == currentUser.ipAddress;
-        }
-      });
+  chats.forEach((currentUser) => {
+    const filteredMessages = messages.filter((message) => {
+      const isIpAddress = currentUser.ipAddress.includes(".");
+      if (isIpAddress) {
+        return (
+          [message.from, message.to].includes(currentUser.ipAddress) &&
+          [message.from, message.to].includes(ipAddress)
+        );
+      } else {
+        return message.toChannel == currentUser.ipAddress;
+      }
+    });
 
-      currentUser.messages = filteredMessages
-    })
+    currentUser.messages = filteredMessages
+  })
 
 
   socket.emit("start", {
@@ -61,6 +61,17 @@ io.on("connection", (socket) => {
     io.emit('message_readed', { message, user })
   })
 
+
+  socket.on('typing', ({ from, to }: { from: string, to: string }) => {
+    const isIpAddress = to.includes(".");
+    
+    if(isIpAddress){
+      const toUser = users.find((user) => user.ipAddress == to)
+
+      if(toUser) io.to([toUser?.socketId]).emit("typing", from);
+
+    }
+  })
 
   socket.on("message", ({ message, to }) => {
     const isIpAddress = to.includes('.')

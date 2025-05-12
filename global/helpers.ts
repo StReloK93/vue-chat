@@ -6,6 +6,7 @@ export class User implements IUser {
   ipAddress: string;
   online: boolean;
   messages: Message[];
+  typing: boolean
 
   constructor(ipAddress: string, socketId: string, users: IUser[]) {
     this.socketId = socketId;
@@ -13,6 +14,7 @@ export class User implements IUser {
     this.id = users.length;
     this.online = true;
     this.messages = []
+    this.typing = false
   }
 }
 

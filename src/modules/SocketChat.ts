@@ -16,6 +16,7 @@ const dynamicUrlHost = `http://${urlWithoutPort}:3000`;
 const socket = io(dynamicUrlHost);
 
 export default function () {
+  const typingTimeoutId: Ref<any[]> = ref([])
   const localUser = JSON.parse(sessionStorage.getItem("user") as string);
   const users: Ref<IUser[]> = ref([]);
   const user: Ref<IUser> = ref(localUser ? localUser : null);
@@ -27,25 +28,25 @@ export default function () {
 
   function selectChat(ipAddress: string) {
     activeChat.value = null;
-    
+
     setTimeout(async () => {
       const messages = users.value.find((currentUser) => currentUser.ipAddress == ipAddress)?.messages
       activeChat.value = ipAddress;
       const isIpAddress = ipAddress.includes(".");
-      if(isIpAddress){
-        const noViewedMessages = messages?.filter((message) => 
-          message.from == ipAddress && 
+      if (isIpAddress) {
+        const noViewedMessages = messages?.filter((message) =>
+          message.from == ipAddress &&
           !message.viewusers.map((viewedUser) => viewedUser.ipAddress).includes(user.value.ipAddress)
         ) as Message[]
 
-        if(noViewedMessages?.length == 0) return nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
+        if (noViewedMessages?.length == 0) return nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
         const idList = noViewedMessages?.map((message) => message.id) as number[]
 
         const maxId = Math.min(...idList)
         const firstMessageIndex = messages?.findIndex((message) => message.id == maxId) as number
-          await nextTick(() => scrollToLastMessage(messagesList.value.at(firstMessageIndex), false));
+        await nextTick(() => scrollToLastMessage(messagesList.value.at(firstMessageIndex), false));
       }
-      else{
+      else {
         return nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
       }
 
@@ -112,10 +113,36 @@ export default function () {
     }
   }
 
+  function typing() {
+    socket.emit("typing", { from: user.value.ipAddress, to: activeChat.value });
+  }
+
   function onScrollChat(event: Event) {
     scrollProcent.value = getScrollProcent(event);
   }
 
+
+
+  socket.on("typing", (from: string) => {
+    const currentUser = users.value.find((user) => user.ipAddress == from)
+    if(currentUser){
+
+      const oldTimer = typingTimeoutId.value.find((oldTimer) => oldTimer.ip == from)
+      
+      if(oldTimer) {
+        clearTimeout(oldTimer.timerId)
+        typingTimeoutId.value = typingTimeoutId.value.filter((curr) => curr.ip != from)
+      }
+
+      currentUser.typing = true
+      const timerId = setTimeout(() => currentUser.typing = false, 1000)
+      typingTimeoutId.value.push({timerId, ip: from})
+    }
+    
+  });
+
+
+  
   socket.on("join", (newuser: IUser) => {
     const user = users.value.find(
       (user) => user.ipAddress == newuser.ipAddress
@@ -157,6 +184,7 @@ export default function () {
     writeMessage,
     onScrollChat,
     handel,
+    typing,
     selectChat,
     onVisibleMessage,
   };

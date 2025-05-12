@@ -1,5 +1,5 @@
 <template>
-   <div class="mr-1 rounded overflow-hidden w-full sm:w-72 bg-white h-full">
+   <div class="mr-1 rounded overflow-hidden w-full sm:w-72 min-w-64 bg-white h-full">
       <h3 class="h-14 px-6 uppercase font-semibold text-sm content-center">
          All messages
       </h3>
@@ -21,8 +21,11 @@
                   {{ moment(currentUser.messages.at(-1)?.date).format('HH:mm') }}
                </span>
             </main>
-            <div class="text-left flex items-center">
-               <aside class="flex-grow flex items-center">
+            <aside v-if="currentUser.typing" class="text-left text-gray-400 text-sm">
+               typing...
+            </aside>
+            <div v-else class="text-left flex items-center">
+               <aside  class="flex-grow flex items-center">
                   <p class="line-clamp-1 text-gray-400 text-sm">
                      {{ currentUser.messages.at(-1)?.text }}
                   </p>
@@ -49,12 +52,13 @@
 import moment from 'moment';
 import type { IUser } from 'global';
 import type { Message } from 'global/helpers';
-const emit = defineEmits(['selectChat'])
+const emit = defineEmits(['selectChat', 'newMessages'])
 const props = defineProps<{
    menuUsers: IUser[] | undefined
    activeChat: string | null,
-   user: IUser
+   user: IUser,
 }>()
+
 
 const newMessages = (currentUser: IUser) => {
    const newMessages = currentUser.messages.filter(
@@ -63,6 +67,7 @@ const newMessages = (currentUser: IUser) => {
          !message.viewusers.map((viewedUser) => viewedUser.ipAddress)
             .includes(props.user.ipAddress)
    )
+   
    return newMessages.length
 }
 
