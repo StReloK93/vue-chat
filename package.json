@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "nodemon --watch server --ext ts --exec \"npx tsx server/index.ts\"",
+    "serve": "nodemon --watch server --ext ts --exec \"npx tsx server/index.ts\"",
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
