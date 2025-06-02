@@ -3,6 +3,11 @@
 		<div class="flex flex-row h-full overflow-x-hidden antialiased text-gray-800">
 			<ChatUsers :menu-users="users" :user="user" :active-chat="activeChat" @select-chat="selectChat"
 				@new-messages="issetTitleMessage" />
+				<main @click="imagePreview = []" v-if="imagePreview.length" class="absolute inset-0 flex items-center justify-center z-[100] bg-black/30">
+					<div @click.stop class="bg-white/80 p-2 grid grid-cols-2 grid-rows-[repeat(200px,200px)] gap-2 w-96 flex-wrap rounded overflow-y-scroll max-h-96">
+						<img v-for="image in imagePreview" :src="image" class="rounded h-full object-cover" />
+					</div>
+				</main>
 			<div :class="{ 'translate-x-full': activeChat == null }"
 				class="flex flex-col  h-full sm:max-w-[992px] sm:translate-x-0 w-full sm:static fixed bg-white z-50 sm:transition-none transition-all">
 				<div class="h-14 px-2 flex justify-between items-center uppercase font-semibold text-sm">
@@ -14,6 +19,7 @@
 					<span class="opacity-0 w-10">Bumin</span>
 				</div>
 				<main
+					@paste.prevent="onPaste"
 					class="flex-grow lg:bg-[length:50%] md:bg-[length:60%] sm:bg-[length:50%] bg-[length:100%] shadow-inner bg-[url('/back.jpg')] sm:rounded-t-2xl">
 					<aside class="h-full flex flex-col sm:px-7 px-3 sm:py-2 py-2">
 						<MessagesList ref="messagesParent" @chat-scroll="onScrollChat">
@@ -32,8 +38,8 @@
 								:message="message" :messagesParent="messagesParent?.airnet" @visible="onVisibleMessage"
 								:key="index" />
 						</MessagesList>
-						<MessageInput v-if="activeChat" @submit="writeMessage()" @typing="typing" @submit-enter="handel"
-							:messageContain="message.trim() == ''" v-model="message" />
+						<MessageInput v-if="activeChat" @submit="writeMessage()" @typing="typing"
+							@submit-enter="handel" :messageContain="message.trim() == ''" v-model="message" />
 					</aside>
 				</main>
 			</div>
@@ -53,6 +59,29 @@ const issetNewMessage: Ref<any[]> = ref([])
 const messagesParent: Ref<any> = ref(null)
 const oldTitle = document.title
 const intervalId: Ref<number | undefined> = ref(undefined)
+const imagePreview: any = ref([])
+const imageFile: any = ref(null)
+
+const onPaste = async (event: ClipboardEvent) => {
+	imagePreview.value = []
+	const items: any = event.clipboardData?.items || []
+
+	for (const item of items) {
+		
+		if (item.type.startsWith('image')) {
+			const file = item.getAsFile()
+			if (file) {
+				imageFile.value = file
+
+				const reader = new FileReader()
+				reader.onload = (e) => {
+					imagePreview.value.push(e.target?.result)
+				}
+				reader.readAsDataURL(file)
+			}
+		}
+	}
+}
 
 
 const newMessages = (messages: Message[]) => {
@@ -68,7 +97,7 @@ const newMessages = (messages: Message[]) => {
 
 function issetTitleMessage(count: number, ipAddress: string) {
 	console.log('current', count);
-	
+
 	if (count > 0) {
 		issetNewMessage.value.push(ipAddress)
 	}
