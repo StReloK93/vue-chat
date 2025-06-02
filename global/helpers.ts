@@ -7,14 +7,16 @@ export class User implements IUser {
   online: boolean;
   messages: Message[];
   typing: boolean
+  hostname?: string | null
 
-  constructor(ipAddress: string, socketId: string, users: IUser[]) {
+  constructor(ipAddress: string, socketId: string, users: IUser[], hostname?: string | null) {
     this.socketId = socketId;
     this.ipAddress = ipAddress;
     this.id = users.length;
     this.online = true;
     this.messages = []
     this.typing = false
+    this.hostname = hostname
   }
 }
 

@@ -7,6 +7,7 @@ export interface IUser {
   online?: boolean;
   icon?: string;
   color?: string;
+  hostname?: string | null;
   messages: Message[];
   typing: boolean
 }

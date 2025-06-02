@@ -55,18 +55,6 @@ const ipAddresses = computed(() => {
 	return props.message.viewusers.map((user) => user.ipAddress)
 })
 
-// useIntersectionObserver(
-// 	target,
-// 	([entry], observerElement) => {
-// 		console.log(props.message.text , props.message.from);
-
-// 		if (entry.isIntersecting && !myMessage.value) {
-// 			emit('visible', props.message)
-// 		}
-// 	},
-// 	props.messagesParent?.value,
-// 	// { threshold: [0.3] } // kamida oz qismi ko‘rinsa
-// )
 const { stop } = useIntersectionObserver(
 	target,
 	([entry]) => {
@@ -80,7 +68,5 @@ const { stop } = useIntersectionObserver(
 	}
 
 )
-onUnmounted(() => {
-	stop()
-})
+onUnmounted(() => stop())
 </script>

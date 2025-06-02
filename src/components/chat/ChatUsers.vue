@@ -14,8 +14,8 @@
          </section>
          <section class="flex-grow">
             <main class="flex items-center justify-between">
-               <span class="capitalize mb-px font-semibold">
-                  {{ currentUser.ipAddress }}
+               <span class="mb-px font-semibold line-clamp-1 uppercase text-left">
+                  {{ currentUser.hostname ? currentUser.hostname : currentUser.ipAddress }}
                </span>
                <span v-if="currentUser.messages.at(-1)" class="text-[11px] text-zinc-500">
                   {{ moment(currentUser.messages.at(-1)?.date).format('HH:mm') }}

@@ -54,6 +54,8 @@ export default function () {
   }
 
   socket.on("start", ({ user: currentUser, users: chats }: { user: IUser, users: IUser[] }) => {
+    console.log(currentUser);
+    
     chats.forEach((currentUser) => {
       currentUser.color = colors[Math.floor(Math.random() * colors.length)]
       currentUser.icon = icons[Math.floor(Math.random() * icons.length)]
@@ -144,6 +146,8 @@ export default function () {
 
   
   socket.on("join", (newuser: IUser) => {
+    console.log(newuser);
+    
     const user = users.value.find(
       (user) => user.ipAddress == newuser.ipAddress
     );

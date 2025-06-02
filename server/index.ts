@@ -2,6 +2,8 @@ import io from "./server.js";
 import { User, Message } from "../global/helpers.js";
 import { cleanIp } from "./helpers.js";
 import { IUser } from "../global/index.js";
+import dns from 'node:dns';
+import os from 'os';
 process.env.TZ = "Asia/Tashkent";
 
 const users: IUser[] = [new User('global', 'global', [])];
@@ -10,50 +12,69 @@ const messages: Message[] = [];
 io.on("connection", (socket) => {
   const ipAddress = cleanIp(socket.handshake.address);
   const user = users.find((user) => user.ipAddress === ipAddress);
+  var sessionUser : IUser
 
-  if (user) {
-    user.socketId = socket.id;
-    var sessionUser = user;
-    user.online = true
-  } else {
-    var sessionUser: IUser = new User(ipAddress, socket.id, users);
-    users.push(sessionUser);
-  }
+  var hostname: string | null = null
 
 
-  socket.broadcast.emit("join", sessionUser);
+  dns.reverse(ipAddress, (err, hostnames) => {
+    if (err) hostname = os.hostname()
+    else hostname = hostnames[0]
 
-  const chats = users
-    .filter((currentUser) => currentUser.ipAddress != ipAddress)
+    if (user) {
+      user.socketId = socket.id;
+      sessionUser = user;
+      user.online = true
+    } else {
+      console.log(hostname);
+      
+      sessionUser = new User(ipAddress, socket.id, users, hostname);
+      users.push(sessionUser);
+    }
 
-  chats.forEach((currentUser) => {
-    const filteredMessages = messages.filter((message) => {
-      const isIpAddress = currentUser.ipAddress.includes(".");
-      if (isIpAddress) {
-        return (
-          [message.from, message.to].includes(currentUser.ipAddress) &&
-          [message.from, message.to].includes(ipAddress)
-        );
-      } else {
-        return message.toChannel == currentUser.ipAddress;
-      }
+
+
+
+
+
+    socket.broadcast.emit("join", sessionUser);
+
+    const chats = users.filter((currentUser) => currentUser.ipAddress != ipAddress)
+
+    chats.forEach((currentUser) => {
+      const filteredMessages = messages.filter((message) => {
+        const isIpAddress = currentUser.ipAddress.includes(".");
+        if (isIpAddress) {
+          return (
+            [message.from, message.to].includes(currentUser.ipAddress) &&
+            [message.from, message.to].includes(ipAddress)
+          );
+        } else {
+          return message.toChannel == currentUser.ipAddress;
+        }
+      });
+
+      currentUser.messages = filteredMessages
+    })
+
+
+    socket.emit("start", {
+      user: sessionUser,
+      messages: messages.filter((message) => {
+        const my = message.from == sessionUser.ipAddress
+        const forMe = message.to == sessionUser.ipAddress
+        const globalChat = message.toChannel == 'global'
+
+        return my || forMe || globalChat
+      }),
+      users: chats
     });
-
-    currentUser.messages = filteredMessages
-  })
-
-
-  socket.emit("start", {
-    user: sessionUser,
-    messages: messages.filter((message) => {
-      const my = message.from == sessionUser.ipAddress
-      const forMe = message.to == sessionUser.ipAddress
-      const globalChat = message.toChannel == 'global'
-
-      return my || forMe || globalChat
-    }),
-    users: chats
   });
+
+
+
+
+
 
   socket.on('visibleMessage', ({ message, user }: { message: Message, user: IUser }) => {
     const currentMessage = messages.find((mess) => mess.id == message.id)
@@ -64,11 +85,11 @@ io.on("connection", (socket) => {
 
   socket.on('typing', ({ from, to }: { from: string, to: string }) => {
     const isIpAddress = to.includes(".");
-    
-    if(isIpAddress){
+
+    if (isIpAddress) {
       const toUser = users.find((user) => user.ipAddress == to)
 
-      if(toUser) io.to([toUser?.socketId]).emit("typing", from);
+      if (toUser) io.to([toUser?.socketId]).emit("typing", from);
 
     }
   })
