@@ -1,5 +1,7 @@
 import type { IUser } from "./index";
 
+export type FileType = 'image' | 'video' | 'text' | 'file' | 'sound';
+
 export class User implements IUser {
   id: number;
   socketId: string;
@@ -20,10 +22,13 @@ export class User implements IUser {
   }
 }
 
+
 export class Message {
   id: number;
   from: string;
+  type: FileType
   to?: string;
+  files: any[] | null;
   text: string;
   date: Date;
   toChannel?: string;
@@ -37,8 +42,10 @@ export class Message {
     to?: string;
     toChannel?: string;
     messages: any[];
+    files: any[];
+    type: FileType
   }) {
-    const { from, to, toChannel, text, messages } = params;
+    const { from, to, toChannel, text, messages, type, files } = params;
 
     // ❗ Custom constraint: faqat bittasi bo‘lishi kerak
     if ((!to && !toChannel) || (to && toChannel)) {
@@ -51,6 +58,8 @@ export class Message {
     this.to = to;
     this.text = text;
     this.date = new Date();
+    this.type = type;
+    this.files = files;
     this.viewusers = [];
   }
 }

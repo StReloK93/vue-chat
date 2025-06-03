@@ -6,6 +6,15 @@ body {
   overscroll-behavior: contain;
 }
 
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
 
 .slide-fade-enter-active {
   transition: all 0.1s;
@@ -22,13 +31,13 @@ body {
 }
 
 emoji-picker {
-  --num-columns: 5;
-  --emoji-size: 1.5rem;
+  --num-columns: 9;
+  --emoji-size: 1.3rem;
   --background: rgb(255, 255, 255);
-  --emoji-padding: 8px;
-  --skintone-border-radius: 2px;
+  --emoji-padding: 7px;
+  --skintone-border-radius: 5px;
   --border-radius: 8px;
-  --category-emoji-padding: 2px;
+  --category-emoji-padding: 5px;
 }
 
 ::-webkit-scrollbar {width: 2px;}

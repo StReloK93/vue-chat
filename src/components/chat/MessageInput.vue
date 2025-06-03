@@ -2,8 +2,9 @@
    <form @submit.prevent="emit('submit')" class="flex flex-row py-3 rounded bg-white w-full px-4 shadow">
       <div class="flex-grow">
          <div class="w-full relative">
-            <textarea placeholder="Write message" style="resize: none;" @mouseover="closeEmoji"  @keydown.enter="emit('submit-enter', $event)"
-               @click="changer" @keyup="changer" @select="changer" ref="textArea" type="text" v-model="message"
+            <textarea @paste.stop="onPaste" placeholder="Write message" style="resize: none;" @mouseover="closeEmoji"
+               @keydown.enter="emit('submit-enter', $event)" @click="changer" @keyup="changer" @select="changer"
+               ref="textArea" type="text" v-model="message"
                class="flex w-full focus:outline-none hidden-scroll focus:border-indigo-300 py-2 pl-3 pr-12 max-h-32 h-auto min-h-16">
 				</textarea>
             <button @mouseover="openEmoji" @click="openEmoji" type="button" :class="{ 'text-blue-600': emojiToggle }"
@@ -11,7 +12,7 @@
                <i class="fa-regular fa-face-smile"></i>
             </button>
             <Transition name="slide-fade">
-               <emoji-picker v-show="emojiToggle" ref="emojiRef" @mouseover="openEmoji" @mouseout="closeEmoji"
+               <emoji-picker dataSource="/public/data.json" v-show="emojiToggle" ref="emojiRef" @mouseover="openEmoji" @mouseout="closeEmoji"
                   class="light absolute -top-[420px] sm:right-0" />
             </Transition>
          </div>
@@ -34,7 +35,24 @@ var startPosition = 0
 var endPosition = 0
 const props = defineProps(['messageContain'])
 
-const emit = defineEmits(['submit', 'submit-enter', 'typing'])
+
+const onPaste = async (event: ClipboardEvent) => {
+   const items: any = event.clipboardData?.items
+   
+   for (const item of items) {
+      if(item.kind == 'file'){
+         event.preventDefault()
+         emit('filePasted', event)
+         break 
+      }
+   }
+}
+
+
+
+
+
+const emit = defineEmits(['submit', 'submit-enter', 'typing', 'filePasted'])
 const message: any = defineModel()
 const textArea = ref()
 const emojiToggle = ref(false)
@@ -58,9 +76,9 @@ function changer(event: any) {
    startPosition = textArea.value.selectionStart;
    endPosition = textArea.value.selectionEnd;
 
-   if(event.type == 'keyup' && event.keyCode != 13){
+   if (event.type == 'keyup' && event.keyCode != 13) {
       emit('typing')
-   } 
+   }
 }
 
 function insertAtCaret(emoji: string) {
@@ -80,5 +98,7 @@ onMounted(() => {
          insertAtCaret(event.detail.unicode)
       });
    }
+
+   textArea.value.focus()
 })
 </script>

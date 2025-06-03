@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import type { IUser } from "../../global";
 import type { Ref } from "vue";
-import type { Message } from "../../global/helpers";
+import type { Message, FileType } from "../../global/helpers";
 import { scrollToLastMessage, getScrollProcent } from "./scrollToEnd";
 import { playNotificationSound } from "./messageSound";
 import { ref, nextTick } from "vue";
@@ -54,15 +54,15 @@ export default function () {
   }
 
   socket.on("start", ({ user: currentUser, users: chats }: { user: IUser, users: IUser[] }) => {
-    console.log(currentUser);
-    
     chats.forEach((currentUser) => {
       currentUser.color = colors[Math.floor(Math.random() * colors.length)]
       currentUser.icon = icons[Math.floor(Math.random() * icons.length)]
     })
-
+    
     user.value = currentUser;
     users.value = chats;
+    console.log(chats);
+    
     nextTick(() => scrollToLastMessage(messagesList.value.at(-1), false));
   });
 
@@ -167,8 +167,18 @@ export default function () {
     socket.emit("message", {
       message: message.value,
       to: activeChat.value,
+      type: 'text'
     });
     message.value = "";
+  }
+
+  function sendFileMessage(type: FileType, files: any[]){
+    socket.emit("message", {
+      message: message.value,
+      to: activeChat.value,
+      type: type,
+      files: files
+    });
   }
 
   function handel(event: any) {
@@ -191,5 +201,6 @@ export default function () {
     typing,
     selectChat,
     onVisibleMessage,
+    sendFileMessage
   };
 }

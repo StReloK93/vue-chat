@@ -26,8 +26,6 @@ io.on("connection", (socket) => {
       sessionUser = user;
       user.online = true
     } else {
-      console.log(hostname);
-      
       sessionUser = new User(ipAddress, socket.id, users, hostname);
       users.push(sessionUser);
     }
@@ -94,7 +92,7 @@ io.on("connection", (socket) => {
     }
   })
 
-  socket.on("message", ({ message, to }) => {
+  socket.on("message", ({ message, to, type, files }) => {
     const isIpAddress = to.includes('.')
     const recieverUser = users.find((user) => user.ipAddress === to);
     const senderUser = users.find((user) => user.ipAddress === sessionUser.ipAddress);
@@ -105,6 +103,9 @@ io.on("connection", (socket) => {
       to: isIpAddress ? to : null,
       text: message,
       messages: messages,
+      type: type,
+      files: files
+      
     });
 
     if (isIpAddress && (senderUser && recieverUser)) {

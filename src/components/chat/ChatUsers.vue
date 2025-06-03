@@ -15,7 +15,7 @@
          <section class="flex-grow">
             <main class="flex items-center justify-between">
                <span class="mb-px font-semibold line-clamp-1 uppercase text-left">
-                  {{ currentUser.hostname ? currentUser.hostname : currentUser.ipAddress }}
+                  {{ currentUser.hostname ? replace(currentUser.hostname, '.SEVRU.ngmk.uz') : currentUser.ipAddress }}
                </span>
                <span v-if="currentUser.messages.at(-1)" class="text-[11px] text-zinc-500">
                   {{ moment(currentUser.messages.at(-1)?.date).format('HH:mm') }}
@@ -25,19 +25,20 @@
                typing...
             </aside>
             <div v-else class="text-left flex items-center">
-               <aside  class="flex-grow flex items-center">
+               <aside class="flex-grow flex items-center">
                   <p class="line-clamp-1 text-gray-400 text-sm">
                      {{ currentUser.messages.at(-1)?.text }}
                   </p>
                </aside>
                <div v-if="user?.ipAddress != currentUser.messages.at(-1)?.from" class="min-w-7 text-right text-white">
-                  <span v-if="newMessages(currentUser)"
+                  <span v-if="newMessages(currentUser.messages, user?.ipAddress)"
                      class="w-5 font-mono h-5 text-xs text-center content-center bg-teal-600 inline-block rounded-full">
-                     {{ newMessages(currentUser) }}
+                     {{ newMessages(currentUser.messages, user?.ipAddress) }}
                   </span>
                </div>
                <div v-else>
-                  <span  :class="[myMessageIsReading(currentUser.messages.at(-1)) ? 'text-sky-400' : 'text-gray-400']" class="text-xs inline-flex">
+                  <span :class="[myMessageIsReading(currentUser.messages.at(-1)) ? 'text-sky-400' : 'text-gray-400']"
+                     class="text-xs inline-flex">
                      <i class="fa-solid fa-check relative -right-1.5"></i>
                      <i class="fa-solid fa-check relative"></i>
                   </span>
@@ -49,10 +50,12 @@
 </template>
 
 <script setup lang="ts">
+import { replace } from '@/modules/helpers';
 import moment from 'moment';
 import type { IUser } from 'global';
 import type { Message } from 'global/helpers';
-const emit = defineEmits(['selectChat', 'newMessages'])
+import { newMessages } from '../../modules/scrollToEnd'
+const emit = defineEmits(['selectChat'])
 const props = defineProps<{
    menuUsers: IUser[] | undefined
    activeChat: string | null,
@@ -60,23 +63,8 @@ const props = defineProps<{
 }>()
 
 
-const newMessages = (currentUser: IUser) => {
-   const newMessages = currentUser.messages.filter(
-      (message) =>
-         message.from != props.user.ipAddress &&
-         !message.viewusers.map((viewedUser) => viewedUser.ipAddress)
-            .includes(props.user.ipAddress)
-   )
-   
-   return newMessages.length
-}
-
-
-
 function myMessageIsReading(message: Message | undefined): boolean {
-   if(message){
-      return message.viewusers.length > 0 ? true : false
-   }
+   if (message) return message.viewusers.length > 0 ? true : false
    return false
 }
 </script>
