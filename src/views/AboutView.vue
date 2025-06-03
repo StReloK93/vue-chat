@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { newMessages } from '../modules/scrollToEnd'
 import SendFileComponent from '@/components/SendFileComponent.vue'
-import { type Message } from 'global/helpers'
+import type {  Message } from 'global/helpers'
 import ChatUsers from '@/components/chat/ChatUsers.vue'
 import MessagesList from '@/components/MessagesList.vue'
 import MessageVue from '@/components/chat/Message.vue'
